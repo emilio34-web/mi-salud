@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Salud</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { min-height: 100vh; background: linear-gradient(160deg,#0d1117 0%,#161b27 55%,#0d1117 100%); font-family: 'Segoe UI', system-ui, sans-serif; color: #e2e8f0; padding-bottom: 80px; }
+header { background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.07); padding: 18px 16px 14px; text-align: center; position: sticky; top: 0; z-index: 10; backdrop-filter: blur(20px); }
+header .sub { font-size: 10px; color: #374151; letter-spacing: 3px; text-transform: uppercase; }
+header h1 { font-size: 20px; font-weight: 800; background: linear-gradient(90deg,#60a5fa,#a78bfa,#f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.page { display: none; padding: 16px; }
+.page.active { display: block; }
+.section-label { font-size: 10px; color: #374151; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+.empty-state { background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.07); border-radius: 18px; padding: 28px 20px; text-align: center; color: #374151; }
+.empty-state .emoji { font-size: 36px; margin-bottom: 8px; }
+.empty-state p { font-size: 14px; line-height: 1.6; }
+.latest-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 22px; }
+.latest-card { border-radius: 14px; padding: 12px 14px; display: flex; gap: 12px; align-items: center; }
+.latest-card .icon { font-size: 26px; }
+.latest-card .name { font-size: 11px; font-weight: 700; }
+.latest-card .val { font-size: 15px; font-weight: 700; color: #1e293b; }
+.latest-card .dt { font-size: 10px; color: #64748b; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ind-btn { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; padding: 18px 10px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: background 0.2s; width: 100%; }
+.ind-btn:hover, .ind-btn:active { background: rgba(255,255,255,0.09); }
+.ind-btn .big { font-size: 30px; }
+.ind-btn .lbl { font-size: 12px; font-weight: 700; color: #e2e8f0; line-height: 1.3; }
+.ind-btn .norm { font-size: 10px; border-radius: 20px; padding: 3px 8px; }
+.back-btn { background: none; border: none; color: #6b7280; font-size: 14px; cursor: pointer; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+.form-card { border-radius: 20px; padding: 16px 18px; margin-bottom: 20px; }
+.form-card .big { font-size: 36px; }
+.form-card h2 { font-size: 20px; font-weight: 800; color: #1e293b; }
+.form-card .norm-txt { font-size: 11px; margin-top: 2px; }
+.form-group { display: flex; flex-direction: column; gap: 16px; }
+label { font-size: 12px; color: #6b7280; display: block; margin-bottom: 6px; }
+input, textarea { width: 100%; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; color: #f1f5f9; padding: 12px 14px; font-size: 16px; outline: none; font-family: inherit; }
+textarea { resize: none; }
+.imc-box { border-radius: 14px; padding: 14px 16px; }
+.imc-box .imc-label { font-size: 11px; color: #6b7280; }
+.imc-box .imc-val { font-size: 28px; font-weight: 800; }
+.imc-box .imc-cat { font-size: 13px; }
+.save-btn { width: 100%; padding: 15px; border: none; border-radius: 14px; color: #fff; font-size: 16px; font-weight: 800; cursor: pointer; transition: all 0.3s; }
+.filters { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 16px; padding-bottom: 4px; }
+.filter-btn { white-space: nowrap; padding: 7px 14px; border-radius: 20px; border: none; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; background: rgba(255,255,255,0.07); }
+.filter-btn.active { background: #6366f1; }
+.record-list { display: flex; flex-direction: column; gap: 10px; }
+.record-card { background: rgba(255,255,255,0.03); border-radius: 14px; padding: 14px 16px; }
+.record-inner { display: flex; justify-content: space-between; align-items: flex-start; }
+.record-left { display: flex; gap: 10px; align-items: flex-start; flex: 1; }
+.record-icon { font-size: 24px; }
+.record-name { font-size: 11px; font-weight: 700; }
+.record-val { font-size: 15px; color: #f1f5f9; font-weight: 700; }
+.record-imc { font-size: 12px; }
+.record-date { font-size: 11px; color: #4b5563; margin-top: 3px; }
+.record-notes { font-size: 12px; color: #6b7280; margin-top: 3px; }
+.del-btn { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); color: #ef4444; border-radius: 8px; padding: 5px 10px; font-size: 12px; cursor: pointer; margin-left: 8px; }
+nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(13,17,23,0.97); border-top: 1px solid rgba(255,255,255,0.07); display: flex; backdrop-filter: blur(20px); }
+nav button { flex: 1; padding: 12px 0 10px; background: none; border: none; color: #374151; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; transition: color 0.2s; }
+nav button.active { color: #818cf8; }
+nav button .nav-icon { font-size: 22px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="sub">Registro Médico Personal</div>
+  <h1>💊 Mi Salud</h1>
+</header>
+<div id="page-home" class="page active">
+  <div class="section-label" style="margin-top:4px">Últimos registros</div>
+  <div id="latest-container" style="margin-bottom:22px"></div>
+  <div class="section-label">+ Nuevo registro</div>
+  <div class="grid" id="ind-grid"></div>
+</div>
+<div id="page-form" class="page">
+  <button class="back-btn" onclick="showPage('home')">← Regresar</button>
+  <div id="form-header" class="form-card"></div>
+  <div class="form-group">
+    <div><label>📅 Fecha del examen</label><input type="date" id="f-date"></div>
+    <div id="form-fields"></div>
+    <div id="imc-result" style="display:none" class="imc-box"></div>
+    <div><label>📝 Notas (opcional)</label><textarea id="f-notes" rows="3" placeholder="Ej: En ayunas, con medicamento..."></textarea></div>
+    <button class="save-btn" id="save-btn" onclick="saveRecord()">Guardar registro</button>
+  </div>
+</div>
+<div id="page-history" class="page">
+  <div style="font-size:17px;font-weight:800;margin-bottom:14px">📋 Historial</div>
+  <div class="filters" id="filters"></div>
+  <div id="record-list"></div>
+</div>
+<nav>
+  <button id="nav-home" class="active" onclick="showPage('home')"><span class="nav-icon">🏠</span>Inicio</button>
+  <button id="nav-history" onclick="showPage('history')"><span class="nav-icon">📋</span>Historial</button>
+</nav>
+<script>
+const INDICATORS=[{id:"presion",label:"Presión Arterial",icon:"🫀",unit:"mmHg",fields:[{key:"sistolica",label:"Sistólica",placeholder:"120"},{key:"diastolica",label:"Diastólica",placeholder:"80"}],normal:"< 120/80",color:"#ef4444",bg:"#fef2f2",border:"#fecaca"},{id:"glucosa",label:"Glucosa",icon:"🍬",unit:"mg/dL",fields:[{key:"valor",label:"Nivel de glucosa",placeholder:"100"}],normal:"70–100 en ayunas",color:"#f59e0b",bg:"#fffbeb",border:"#fde68a"},{id:"colesterol",label:"Colesterol",icon:"🧪",unit:"mg/dL",fields:[{key:"total",label:"Total",placeholder:"200"},{key:"hdl",label:"HDL (bueno)",placeholder:"60"},{key:"ldl",label:"LDL (malo)",placeholder:"100"}],normal:"Total < 200",color:"#8b5cf6",bg:"#f5f3ff",border:"#ddd6fe"},{id:"peso",label:"Peso / IMC",icon:"⚖️",unit:"kg",fields:[{key:"peso",label:"Peso (kg)",placeholder:"70"},{key:"altura",label:"Altura (cm)",placeholder:"170"}],normal:"IMC 18.5–24.9",color:"#10b981",bg:"#f0fdf4",border:"#bbf7d0"},{id:"frecuencia",label:"Frecuencia Cardíaca",icon:"💓",unit:"bpm",fields:[{key:"valor",label:"Pulsaciones por minuto",placeholder:"72"}],normal:"60–100 bpm",color:"#ec4899",bg:"#fdf2f8",border:"#fbcfe8"},{id:"otro",label:"Otro Examen",icon:"📋",unit:"",fields:[{key:"nombre",label:"Nombre del examen",placeholder:"Ej: Hemoglobina"},{key:"valor",label:"Resultado",placeholder:"Valor"},{key:"unidad",label:"Unidad",placeholder:"Ej: g/dL"}],normal:"Según tu médico",color:"#6b7280",bg:"#f9fafb",border:"#e5e7eb"}];
+let records=JSON.parse(localStorage.getItem('salud_v1')||'[]');
+let currentInd=null,activeFilter='all';
+function saveToStorage(){localStorage.setItem('salud_v1',JSON.stringify(records));}
+function calcIMC(p,a){const peso=parseFloat(p),alt=parseFloat(a)/100;if(!peso||!alt)return null;return(peso/(alt*alt)).toFixed(1);}
+function imcInfo(v){const n=parseFloat(v);if(n<18.5)return{label:'Bajo peso',color:'#3b82f6'};if(n<25)return{label:'Normal ✓',color:'#10b981'};if(n<30)return{label:'Sobrepeso',color:'#f59e0b'};return{label:'Obesidad',color:'#ef4444'};}
+function renderValue(r){if(r.indicator==='presion')return`${r.data.sistolica}/${r.data.diastolica} mmHg`;if(r.indicator==='colesterol')return`Total:${r.data.total} · HDL:${r.data.hdl} · LDL:${r.data.ldl}`;if(r.indicator==='peso')return`${r.data.peso} kg · IMC ${r.imc}`;if(r.indicator==='otro')return`${r.data.nombre}: ${r.data.valor} ${r.data.unidad}`;const ind=INDICATORS.find(i=>i.id===r.indicator);return`${r.data.valor} ${ind?.unit||''}`;}
+function showPage(name){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));const nb=document.getElementById('nav-'+name);if(nb)nb.classList.add('active');if(name==='home')renderHome();if(name==='history')renderHistory();}
+function renderHome(){const latest={};records.forEach(r=>{if(!latest[r.indicator])latest[r.indicator]=r;});const lc=document.getElementById('latest-container');if(Object.keys(latest).length===0){lc.innerHTML=`<div class="empty-state"><div class="emoji">🏥</div><p>Aún no hay registros.<br>Agrega tu primer examen abajo.</p></div>`;}else{lc.innerHTML=`<div class="latest-list">${Object.values(latest).map(r=>{const ind=INDICATORS.find(i=>i.id===r.indicator);return`<div class="latest-card" style="background:${ind.bg};border:1px solid ${ind.border}"><div class="icon">${ind.icon}</div><div><div class="name" style="color:${ind.color}">${ind.label}</div><div class="val">${renderValue(r)}</div><div class="dt">📅 ${r.date}</div></div></div>`;}).join('')}</div>`;}
+document.getElementById('ind-grid').innerHTML=INDICATORS.map(ind=>`<button class="ind-btn" onclick="openForm('${ind.id}')"><div class="big">${ind.icon}</div><div class="lbl">${ind.label}</div><div class="norm" style="color:${ind.color};background:${ind.color}18">✓ ${ind.normal}</div></button>`).join('');}
+function openForm(id){currentInd=INDICATORS.find(i=>i.id===id);document.getElementById('f-date').value=new Date().toISOString().slice(0,10);document.getElementById('f-notes').value='';document.getElementById('imc-result').style.display='none';document.getElementById('form-header').innerHTML=`<div class="big">${currentInd.icon}</div><h2>${currentInd.label}</h2><div class="norm-txt" style="color:${currentInd.color}">Rango normal: ${currentInd.normal}</div>`;document.getElementById('form-header').style.background=currentInd.bg;document.getElementById('form-header').style.border=`1px solid ${currentInd.border}`;document.getElementById('form-fields').innerHTML=currentInd.fields.map(f=>`<div style="margin-bottom:0"><label>${f.label} ${currentInd.unit&&!['nombre','unidad'].includes(f.key)?'('+currentInd.unit+')':''}</label><input type="${['nombre','unidad'].includes(f.key)?'text':'number'}" id="ff-${f.key}" placeholder="${f.placeholder}" ${currentInd.id==='peso'?'oninput="updateIMC()"':''}></div>`).join('');const btn=document.getElementById('save-btn');btn.style.background=`linear-gradient(135deg,${currentInd.color}dd,${currentInd.color}88)`;btn.textContent='Guardar registro';showPage('form');}
+function updateIMC(){const p=document.getElementById('ff-peso')?.value,a=document.getElementById('ff-altura')?.value,imc=calcIMC(p,a),box=document.getElementById('imc-result');if(imc){const info=imcInfo(imc);box.style.display='block';box.style.background=`${info.color}15`;box.style.border=`1px solid ${info.color}40`;box.innerHTML=`<div class="imc-label">IMC calculado automáticamente</div><div class="imc-val" style="color:${info.color}">${imc}</div><div class="imc-cat" style="color:${info.color}">${info.label}</div>`;}else{box.style.display='none';}}
+function saveRecord(){if(!currentInd)return;const data={};currentInd.fields.forEach(f=>{data[f.key]=document.getElementById('ff-'+f.key)?.value||'';});const entry={id:Date.now(),indicator:currentInd.id,label:currentInd.label,icon:currentInd.icon,date:document.getElementById('f-date').value,notes:document.getElementById('f-notes').value,data};if(currentInd.id==='peso')entry.imc=calcIMC(data.peso,data.altura);records.unshift(entry);saveToStorage();const btn=document.getElementById('save-btn');btn.style.background='linear-gradient(135deg,#10b981,#059669)';btn.textContent='✅ ¡Guardado correctamente!';setTimeout(()=>showPage('history'),1300);}
+function renderHistory(){const usedInds=INDICATORS.filter(ind=>records.some(r=>r.indicator===ind.id));document.getElementById('filters').innerHTML=`<button class="filter-btn ${activeFilter==='all'?'active':''}" onclick="setFilter('all')">Todos (${records.length})</button>`+usedInds.map(ind=>`<button class="filter-btn ${activeFilter===ind.id?'active':''}" style="${activeFilter===ind.id?'background:'+ind.color:''}" onclick="setFilter('${ind.id}')">${ind.icon} ${ind.label}</button>`).join('');const filtered=activeFilter==='all'?records:records.filter(r=>r.indicator===activeFilter);const rl=document.getElementById('record-list');if(filtered.length===0){rl.innerHTML=`<div class="empty-state" style="margin-top:30px"><div class="emoji">📭</div><p>No hay registros aún.<br>Ve a Inicio para agregar uno.</p></div>`;return;}rl.innerHTML=`<div class="record-list">${filtered.map(r=>{const ind=INDICATORS.find(i=>i.id===r.indicator);const imcI=r.imc?imcInfo(r.imc):null;return`<div class="record-card" style="border:1px solid ${ind.border}"><div class="record-inner"><div class="record-left"><div class="record-icon">${ind.icon}</div><div><div class="record-name" style="color:${ind.color}">${ind.label}</div><div class="record-val">${renderValue(r)}</div>${imcI?`<div class="record-imc" style="color:${imcI.color}">${imcI.label}</div>`:''}<div class="record-date">📅 ${r.date}</div>${r.notes?`<div class="record-notes">📝 ${r.notes}</div>`:''}</div></div><button class="del-btn" onclick="deleteRecord(${r.id})">🗑️</button></div></div>`;}).join('')}</div>`;}
+function setFilter(f){activeFilter=f;renderHistory();}
+function deleteRecord(id){records=records.filter(r=>r.id!==id);saveToStorage();renderHistory();}
+renderHome();
+</script>
+</body>
+</html>
